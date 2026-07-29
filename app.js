@@ -38,8 +38,22 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // CORS
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174' , 'https://crm-frontend-tawny-five.vercel.app'];
+if (process.env.FRONTEND_URL) {
+  const customOrigins = process.env.FRONTEND_URL.split(',').map(o => o.trim());
+  allowedOrigins.push(...customOrigins);
+}
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.vercel.app');
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
